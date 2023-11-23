@@ -76,7 +76,7 @@
                         <option value="5">5</option>
                         <option value="12">12</option>
                         <option value="18">18</option>
-                        <option value="28">18</option>
+                        <option value="28">28</option>
                     </select>
                     @error('tax_percentage')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

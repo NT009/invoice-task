@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\invoices;
 use Illuminate\Http\Request;
+use Mail;
 
 class invoicesController extends Controller
 {
@@ -78,6 +79,15 @@ class invoicesController extends Controller
         $formfield['file'] = $request->file('file')->store('invoiceFiles', 'public');
 
         invoices::create($formfield);
+        //sending mail
+        
+        Mail::send('components.email', $formfield, function ($message) use($formfield) {
+            $message->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
+            $message->to($formfield['customer_email'], $formfield['customer_name']);
+            $message->subject('create Invoice and details');
+            $message->attach(public_path('storage/'.$formfield['file']));
+        });
+
         return redirect('/')->with('message', 'invoice has sucessfully create and email have been sent');
     }
 }
