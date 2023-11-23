@@ -2,6 +2,15 @@
     #ui-datepicker-div {
         background-color: white !important;
         padding: 0.5rem;
+
+    }
+
+    .ui-datepicker-prev:hover {
+        background-color: blue;
+    }
+
+    .ui-datepicker-next:hover {
+        background-color: blue;
     }
 
     .ui-datepicker-next {
@@ -31,15 +40,36 @@
         border: 1px black solid;
     }
 
+    td:hover {
+        background-color: skyblue;
+    }
+
     .table.ui-datepicker-calendar {
         border: 1px black solid;
+    }
+
+    .error {
+        color: #FF0000;
+    }
+
+    label.error {
+        color: red;
+        font-size: 1rem;
+        display: block;
+        margin-top: 5px;
+    }
+
+    input.error {
+        border: 1px dashed red;
+        font-weight: 300;
+        color: red;
     }
 </style>
 <x-app-layout>
     <div class="w-full flex justify-around">
         <div
             class="w-1/3 p-6 m-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-            <form method="post" action="/edit/{{$invoice->id}}" enctype="multipart/form-data">
+            <form id="createForm" method="post" action="/edit/{{ $invoice->id }}" enctype="multipart/form-data">
                 @csrf
                 @method('put')
                 <div class="mb-6">
@@ -62,13 +92,6 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-                {{-- <div class="mb-6">
-                    <label for="total_amount" 
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Total Amount</label>
-                    <input type="number" id="total_amount" name="total_amount"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        required>
-                </div> --}}
                 <div class="mb-6"><label for="tax_percentage"
                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tax Percentage</label>
                     <select id="tax_percentage" name="tax_percentage" value="{{ $invoice->tax_percentage }}"
@@ -83,20 +106,6 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-                {{-- <div class="mb-6">
-                    <label for="tax_amount"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tax Amount</label>
-                    <input type="number" id="tax_amount" name="tax_amount"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        required>
-                </div> --}}
-                {{-- <div class="mb-6">
-                    <label for="net_amount" 
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Net Amount</label>
-                    <input type="number" id="net_amount" name="net_amount"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        required>
-                </div> --}}
                 <div class="mb-6">
                     <label for="customer_name"
                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Customer Name</label>
@@ -111,7 +120,7 @@
                     <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Customer
                         Email
                         address</label>
-                    <input type="email" id="email" name="customer_email" value="{{ $invoice->customer_email }}"
+                    <input type="email" id="customer_email" name="customer_email" value="{{ $invoice->customer_email }}"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         required>
                     @error('customer_email')
@@ -151,5 +160,76 @@
         $("#datepicker").datepicker({
             dateFormat: "yy-mm-dd"
         });
+    });
+    jQuery.validator.addMethod("accept", function(value, element) {
+        return this.optional(element) || value.match(new RegExp(".[a-zA-Z]+$"));
+    }, "Please enter a valid name");
+    $(document).ready(function() {
+
+        if ($("#createForm").length > 0) {
+            $('#createForm').validate({
+                rules: {
+                    quantity: {
+                        required: true,
+                        number: true,
+                        min: 1
+                    },
+                    amount: {
+                        required: true,
+                        number: true,
+                        min: 0
+                    },
+                    tax_percentage: {
+                        required: true,
+                        number: true
+                    },
+                    invoice_date: {
+                        required: true,
+                        dateISO: true
+                    },
+                    customer_name: {
+                        required: true,
+                        maxlength: 50,
+                        accept: true
+                    },
+                    customer_email: {
+                        required: true,
+                        maxlength: 50,
+                        email: true
+                    }
+                },
+                messages: {
+                    customer_name: {
+                        required: 'Enter Name Detail',
+                        maxlength: 'Name should not be more than 50 character',
+                        accept: 'enter a vaild name & no space after  name'
+                    },
+                    customer_email: {
+                        required: 'Enter Email Detail',
+                        email: 'Enter Valid Email Detail',
+                        maxlength: 'Email should not be more than 50 character',
+                    },
+                    quantity: {
+                        required: "Enter Quatity number",
+                        number: "should be number",
+                        min: "should be greater than 0",
+                    },
+                    amount: {
+                        required: "Enter amount number",
+                        number: 'Should be a number',
+                        min: "should be greate than 0",
+                    },
+                    tax_percentage: {
+                        required: "select a percentage from options",
+                        number: "should be a number",
+                    },
+                    invoice_date: {
+                        required: "Invoice date is required",
+                        dateISO: "date should be iso format",
+                    }
+                }
+            });
+        }
+
     });
 </script>

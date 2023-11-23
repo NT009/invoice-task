@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,7 +15,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->float('amount');
             $table->float('total_amount');
-            $table->enum('tax_percentage',[0,5,12,18,28]);
+            $table->enum('tax_percentage', [0, 5, 12, 18, 28]);
             $table->float('tax_amount');
             $table->float('net_amount');
             $table->string('customer_name');
