@@ -44,7 +44,7 @@ class invoicesController extends Controller
             'tax_percentage' => ['required', 'numeric'],
             'customer_name' => ['required', 'regex:/^[a-zA-Z\s]*$/'],
             'invoice_date' => ['required', 'date', 'before_or_equal:' . now()->format('Y-m-d')],
-            'file' => ['required', 'file', 'mimes:jpg,pdf,png', 'max:3072'],
+            'file' => ['file', 'mimes:jpg,pdf,png', 'max:3072'],
             'customer_email' => ['required', 'email']
         ]);
         $formfield['quantity'] = ($formfield['quantity'] + 0);
@@ -53,8 +53,9 @@ class invoicesController extends Controller
         $formfield['total_amount'] = $formfield['quantity'] * $formfield['amount'];
         $formfield['tax_amount'] = ($formfield['total_amount'] * ($formfield['tax_percentage'] + 0)) / 100;
         $formfield['net_amount'] = $formfield['tax_amount'] + $formfield['total_amount'];
-        $formfield['file'] = $request->file('file')->store('invoiceFiles', 'public');
-
+        if ($request->hasFile('file')) {
+            $formfield['file'] = $request->file('file')->store('invoiceFiles', 'public');
+        }
         $invoice->update($formfield);
         return redirect('/')->with('message', 'invoice has sucessfully updated');
     }
@@ -80,12 +81,12 @@ class invoicesController extends Controller
 
         invoices::create($formfield);
         //sending mail
-        
-        Mail::send('components.email', $formfield, function ($message) use($formfield) {
+
+        Mail::send('components.email', $formfield, function ($message) use ($formfield) {
             $message->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'));
             $message->to($formfield['customer_email'], $formfield['customer_name']);
             $message->subject('create Invoice and details');
-            $message->attach(public_path('storage/'.$formfield['file']));
+            $message->attach(public_path('storage/' . $formfield['file']));
         });
 
         return redirect('/')->with('message', 'invoice has sucessfully create and email have been sent');
